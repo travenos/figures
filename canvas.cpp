@@ -107,7 +107,7 @@ ColorBgr& Canvas::at(int x, int y) noexcept(false)
     }
     else
     {
-        throw std::out_of_range("At least one of coordinates is negative");
+        throw std::out_of_range("At least one of the coordinates is negative");
     }
 }
 
@@ -120,6 +120,6 @@ const ColorBgr& Canvas::at(int x, int y) const noexcept(false)
     }
     else
     {
-        throw std::out_of_range("At least one of coordinates is negative");
+        throw std::out_of_range("At least one of the coordinates is negative");
     }
 }

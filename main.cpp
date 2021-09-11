@@ -144,13 +144,13 @@ void saveToFile(const Canvas& canvas) noexcept
 try
 {
     std::string filename;
-    std::cout << "Enter a file name: ";
+    std::cout << "Enter the file name: ";
     std::cin >> filename;
     canvas.saveToBmp(filename);
 }
 catch (const std::exception& e)
 {
-    std::cerr << __PRETTY_FUNCTION__ << " Catched an exception: " << e.what() << std::endl;
+    std::cerr << __PRETTY_FUNCTION__ << " Caught an exception: " << e.what() << std::endl;
 }
 
 
