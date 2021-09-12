@@ -54,7 +54,7 @@ void Canvas::saveToBmp(const std::string& filename) const noexcept(false)
     constexpr std::uint32_t dataOffset = sizeof(BmpHeader) + sizeof(BmpInfoHeader);
     constexpr std::int32_t resolution = 11811; // 300 DPI
 
-    const auto paddedRowSize = static_cast<std::uint32_t>(4 * std::ceil(m_width / 4.0f)) * bytesPerPixel;
+    const auto paddedRowSize = static_cast<std::uint32_t>(4 * std::ceil((m_width * static_cast<double>(bytesPerPixel)) / 4.0));
     const int rowSize = m_width * static_cast<int>(bytesPerPixel);
     const int paddingSize = static_cast<int>(paddedRowSize) - rowSize;
 
