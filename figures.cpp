@@ -6,42 +6,6 @@
 #include <cstddef>
 #include <utility>
 
-//=========================================================================
-
-Vect2D Vect2D::operator+() const noexcept
-{
-    return *this;
-}
-
-Vect2D Vect2D::operator-() const noexcept
-{
-    return Vect2D{-x, -y};
-}
-
-Vect2D operator+(const Vect2D& vect1, const Vect2D& vect2) noexcept
-{
-    return Vect2D{vect1.x + vect2.x, vect1.y + vect2.y};
-}
-
-Vect2D operator-(const Vect2D& vect1, const Vect2D& vect2) noexcept
-{
-    return vect1 + (-vect2);
-}
-
-Vect2D& Vect2D::operator+=(const Vect2D& other) noexcept
-{
-    *this = *this + other;
-    return *this;
-}
-
-Vect2D& Vect2D::operator-=(const Vect2D& other) noexcept
-{
-    *this = *this - other;
-    return *this;
-}
-
-//=========================================================================
-
 Figure::~Figure() noexcept = default;
 
 Figure::Figure(const Vect2D& topLeft, const Vect2D& bottomRight) noexcept :
@@ -71,6 +35,7 @@ void Figure::setColor(const ColorBgr& color) noexcept
 }
 
 //=========================================================================
+
 Rectangle::Rectangle(const Vect2D& topLeft, const Vect2D& bottomRight) noexcept :
     Figure{topLeft, bottomRight}
 {
@@ -78,39 +43,18 @@ Rectangle::Rectangle(const Vect2D& topLeft, const Vect2D& bottomRight) noexcept 
 
 void Rectangle::draw(Canvas& canvas) const noexcept
 {
-    const int x1 = getTopLeft().x;
-    const int x2 = getBottomRight().x;
-    const int y1 = getTopLeft().y;
-    const int y2 = getBottomRight().y;
+    const Vect2D& topLeft{getTopLeft()};
+    const Vect2D& bottomRight{getBottomRight()};
 
-    const int minX = std::max(getTopLeft().x, 0);
-    const int maxX = std::min(getBottomRight().x, canvas.getWidth() - 1);
-    const int minY = std::max(getTopLeft().y, 0);
-    const int maxY = std::min(getBottomRight().y, canvas.getHeight() - 1);
+    const Vect2D rectangleSize = bottomRight - topLeft;
 
-    for (int x{minX}; x <= maxX; ++x)
-    {
-        if (y1 >= 0 && y1 < canvas.getHeight())
-        {
-            canvas.at(x, y1) = getColor();
-        }
-        if (y2 >= 0 && y2 < canvas.getHeight())
-        {
-            canvas.at(x, y2) = getColor();
-        }
-    }
+    const Vect2D topRight{topLeft.x + rectangleSize.x, topLeft.y};
+    const Vect2D bottomLeft{topLeft.x, topLeft.y + rectangleSize.y};
 
-    for (int y{minY}; y <= maxY; ++y)
-    {
-        if (x1 >= 0 && x1 < canvas.getWidth())
-        {
-            canvas.at(x1, y) = getColor();
-        }
-        if (x2 >= 0 && x2 < canvas.getWidth())
-        {
-            canvas.at(x2, y) = getColor();
-        }
-    }
+    canvas.drawLine(topLeft, topRight, getColor());
+    canvas.drawLine(topRight, bottomRight, getColor());
+    canvas.drawLine(bottomRight, bottomLeft, getColor());
+    canvas.drawLine(bottomLeft, topLeft, getColor());
 }
 
 //=========================================================================
@@ -135,70 +79,10 @@ Triangle::Triangle(const Vect2D& pt1, const Vect2D& pt2, const Vect2D& pt3) noex
 
 void Triangle::draw(Canvas& canvas) const noexcept
 {
-    struct Side
-    {
-        double k;
-        double b;
-        int min;
-        int max;
-        bool yFromX;
-    };
-
     const std::pair<const Vect2D&, const Vect2D&> nodePairs[] = {{m_pt1, m_pt2}, {m_pt1, m_pt3}, {m_pt2, m_pt3}};
-    constexpr std::size_t PairsCount = sizeof(nodePairs) / sizeof(*nodePairs);
-    Side sides[PairsCount];
-
-    for (std::size_t i{0}; i < PairsCount; ++i)
+    for (const auto& pair: nodePairs)
     {
-        const int x1 = nodePairs[i].first.x;
-        const int x2 = nodePairs[i].second.x;
-        const int y1 = nodePairs[i].first.y;
-        const int y2 = nodePairs[i].second.y;
-        sides[i].yFromX = (std::abs(x1 - x2) >= std::abs(y1 - y2));
-        if (sides[i].yFromX)
-        {
-            sides[i].k = x1 != x2 ? static_cast<double>(y1 - y2) / (x1 - x2) : 0;
-            sides[i].b = y1 - sides[i].k * x1;
-            sides[i].min = std::min(x1, x2);
-            sides[i].max = std::max(x1, x2);
-        }
-        else
-        {
-            sides[i].k = y1 != y2 ? static_cast<double>(x1 - x2) / (y1 - y2) : 0;
-            sides[i].b = x1 - sides[i].k * y1;
-            sides[i].min = std::min(y1, y2);
-            sides[i].max = std::max(y1, y2);
-        }
-    }
-
-    for (const auto& side: sides)
-    {
-        if (side.yFromX)
-        {
-            const int minX = std::max(side.min, 0);
-            const int maxX = std::min(side.max, canvas.getWidth() - 1);
-            for (int x{minX}; x <= maxX; ++x)
-            {
-                const int y = static_cast<int>(std::round(side.k * x + side.b));
-                if (y >= 0 && y < canvas.getHeight())
-                {
-                    canvas.at(x, y) = getColor();
-                }
-            }
-        }
-        else
-        {
-            const int minY = std::max(side.min, 0);
-            const int maxY = std::min(side.max, canvas.getHeight() - 1);
-            for (int y{minY}; y <= maxY; ++y)
-            {
-                const int x = static_cast<int>(std::round(side.k * y + side.b));
-                if (x >= 0 && x < canvas.getWidth())
-                {
-                    canvas.at(x, y) = getColor();
-                }
-            }
-        }
+        canvas.drawLine(pair.first, pair.second, getColor());
     }
 }
 

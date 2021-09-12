@@ -2,6 +2,7 @@
 #define CANVAS_H
 
 #include "color.h"
+#include "vect2d.h"
 
 #include <vector>
 #include <string>
@@ -14,6 +15,8 @@ public:
 
     ColorBgr& at(int x, int y) noexcept(false);
     const ColorBgr& at(int x, int y) const noexcept(false);
+
+    void drawLine(const Vect2D& pt1, const Vect2D& pt2, const ColorBgr& color = ColorBgr{0, 0, 0}) noexcept;
 
     int getWidth() const noexcept
     {

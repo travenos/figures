@@ -123,3 +123,46 @@ const ColorBgr& Canvas::at(int x, int y) const noexcept(false)
         throw std::out_of_range("At least one of the coordinates is negative");
     }
 }
+
+void Canvas::drawLine(const Vect2D& pt1, const Vect2D& pt2, const ColorBgr& color) noexcept
+{
+    const bool yFromX = (std::abs(pt1.x - pt2.x) >= std::abs(pt1.y - pt2.y));
+    if (yFromX)
+    {
+        const double k = pt1.x != pt2.x ? static_cast<double>(pt1.y - pt2.y) / (pt1.x - pt2.x) : 0;
+        const double b = pt1.y - k * pt1.x;
+
+        int minX = std::min(pt1.x, pt2.x);
+        minX = std::max(minX, 0);
+        int maxX = std::max(pt1.x, pt2.x);
+        maxX = std::min(maxX, m_width - 1);
+
+        for (int x{minX}; x <= maxX; ++x)
+        {
+            const int y = static_cast<int>(std::round(k * x + b));
+            if (y >= 0 && y < m_height)
+            {
+                at(x, y) = color;
+            }
+        }
+    }
+    else
+    {
+        const double k = pt1.y != pt2.y ? static_cast<double>(pt1.x - pt2.x) / (pt1.y - pt2.y) : 0;
+        const double b = pt1.x - k * pt1.y;
+
+        int minY = std::min(pt1.y, pt2.y);
+        minY = std::max(minY, 0);
+        int maxY = std::max(pt1.y, pt2.y);
+        maxY = std::min(maxY, m_height - 1);
+
+        for (int y{minY}; y <= maxY; ++y)
+        {
+            const int x = static_cast<int>(std::round(k * y + b));
+            if (x >= 0 && x < m_width)
+            {
+                at(x, y) = color;
+            }
+        }
+    }
+}

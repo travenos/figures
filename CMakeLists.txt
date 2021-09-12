@@ -13,6 +13,8 @@ set(SOURCES
     "color.h"
     "figures.cpp"
     "figures.h"
+    "vect2d.cpp"
+    "vect2d.h"
     "main.cpp")
 
 add_executable(${PROJECT_NAME} ${SOURCES})
